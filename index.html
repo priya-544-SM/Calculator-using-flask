@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        input[type="text"] {
+            width: 100%;
+            height: 50px;
+            font-size: 20px;
+            text-align: right;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        button {
+            width: 50px;
+            height: 50px;
+            font-size: 18px;
+            margin: 5px;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .clear {
+            background-color: #f44336;
+            color: white;
+        }
+        .equals {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #result-display {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Calculator</h2>
+        <input type="text" id="expression" name="expression" placeholder="Enter expression" />
+        <div id="result-display">Result: </div>
+        <div class="button-row">
+            <button onclick="appendToExpression('7')">7</button>
+            <button onclick="appendToExpression('8')">8</button>
+            <button onclick="appendToExpression('9')">9</button>
+            <button class="equals" onclick="calculate()">=</button>
+            
+        </div>
+        <div class="button-row">
+            <button onclick="appendToExpression('4')">4</button>
+            <button onclick="appendToExpression('5')">5</button>
+            <button onclick="appendToExpression('6')">6</button>
+            <button onclick="appendToExpression('+')">+</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToExpression('1')">1</button>
+            <button onclick="appendToExpression('2')">2</button>
+            <button onclick="appendToExpression('3')">3</button>
+            <button onclick="appendToExpression('-')">-</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToExpression('0')">0</button>
+            <button onclick="appendToExpression('.')">.</button>
+            <button onclick="appendToExpression('/')">/</button>
+            <button onclick="appendToExpression('*')">*</button>
+        </div>
+        <div class="button-row">
+            <button onclick="appendToExpression('**')">^</button>
+            <button onclick="appendToExpression('%')">%</button>
+            <button onclick="appendToExpression('sqrt(')">√</button>
+            <button class="clear" onclick="clearExpression()">C</button>
+        </div>
+        <div class="button-row">
+            <button onclick="showResult()">res</button>
+        </div>
+    </div>
+    <script>
+        let currentResult = 0;
+        let numbersEntered = [];
+
+        function appendToExpression(value) {
+            if (!isNaN(value)) {
+                numbersEntered.push(value); 
+            }
+            document.getElementById('expression').value += value;
+        }
+
+        function clearExpression() {
+            document.getElementById('expression').value = '';
+            document.getElementById('result-display').innerText = 'Result: ';
+            numbersEntered = [];
+        }
+
+        function calculate() {
+            let expression = document.getElementById('expression').value;
+
+            if (expression.includes('sqrt(')) {
+                expression = expression.replace('sqrt(', 'Math.sqrt(');
+            }
+            expression = expression.replace('^', '**');
+            fetch('/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'expression=' + encodeURIComponent(expression),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    currentResult = data.result;
+                    document.getElementById('result-display').innerText = `Result: ${data.result}`;
+                }
+            });
+        }
+
+        function showResult() {
+            document.getElementById('expression').value = currentResult;
+        }
+    </script>
+</body>
+</html>
